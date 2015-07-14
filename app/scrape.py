@@ -35,7 +35,7 @@ for item in item_list:
 	item_detail = HTMLParser(item['url'])
 	price = item_detail.get_data(DETAIL1['selector'], DETAIL1['spec'])[0]
 	# convert to a pure number
-	price['unit_price'] = re.sub('[^0-9|.]', '', price['unit_price'])
+	price['unit_price'] = float(re.sub('[^0-9|.]', '', price['unit_price']))
 	item.update(price)
 	description = item_detail.get_data(DETAIL2['selector'], DETAIL2['spec'])
 	item.update(description[0])
@@ -45,6 +45,6 @@ for item in item_list:
 
 print json.dumps({
 	"items": item_list,
-	"total": decimalize(total_cost)
+	"total": total_cost
 })
 
