@@ -12,7 +12,7 @@ Installation Notes
 
 >virtualenv --no-site-packages scraper
 
-2. Activate teh virutalenv
+2. Activate the virutalenv
 
 touch scraper/bin/activate
 
