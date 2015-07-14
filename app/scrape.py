@@ -39,7 +39,7 @@ for item in item_list:
 	item.update(price)
 	description = item_detail.get_data(DETAIL2['selector'], DETAIL2['spec'])
 	item.update(description[0])
-	item['size'] = item_detail.get_response_size()
+	item['size'] = "%sKb" % round(float(item_detail.get_response_size())/1000, 2)
 	total_cost += float(item['unit_price'])
 	item.pop('url')
 

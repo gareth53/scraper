@@ -46,7 +46,7 @@ class HTMLParser(object):
 
 	def get_response_size(self):
 		"""
-		returns size of the response in Kb.
+		returns size of the response in bytes.
 		some http headers don't offer the content-size if the response is chunked
 		in that case we'll return the length of the content as a best guess
 		"""
