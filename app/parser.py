@@ -1,4 +1,6 @@
 from lxml.etree import fromstring
+from lxml.cssselect import CSSSelector
+from bs4 import BeautifulSoup
 import json
 import requests
 
@@ -16,14 +18,22 @@ class HTMLParser(object):
 
 
 	def _request(self):
-		# return content
-		# stash the response object on self...
+		"""
+		initialises the request
+		stashes the entire response object on self
+		returns the content
+		"""
 		response = requests.get(self.url)
-		self.response = response
-		return response
+		if response.ok:
+			self.response = response
+			return response.content
+		else:
+			return None
 
-
-	def _parse_html(self):
+	def parse_html(self):
+		"""
+		parse the HTMl based on the spec
+		"""
 		etree = fromstring(self.response.text)
 		datalist = []
 		els = etree.findall(self.selector)
@@ -43,11 +53,92 @@ class HTMLParser(object):
 
 
 	def get_response_size(self):
-		return self.response.size
+		"""
+		returns size of the response in Kb.
+		some http headers wonlt supply the content-size if the response is chunked
+		in that case we'll return the length of the content as a best guess
+		"""
+		try:
+			size = self.response.headers['content-length']
+		except KeyError:
+			size = len(self.response.content)
+		return size
 
 
 	def get_data(self):
 		# make HTTP request
 		self._request()
 		# build data, return JSON
-		return self._parse_html()
+		return self.parse_html()
+
+
+class HTMLParser2(HTMLParser):
+	"""
+	new parse using CSS selectors, much nicer than XPath :)
+	"""
+
+	def __init__(self, url, autorequest=True):
+		"""
+		url: string, URL to be retrieved
+		"""
+		self.url = url
+		if autorequest:
+			self._request()
+
+	def _request(self):
+		"""
+		initialises the request
+		stashes the entire response object on self
+		returns the content
+		"""
+		response = requests.get(self.url)
+		if response.ok:
+			self.response = response
+			return response.content
+		else:
+			return None
+
+	def get_data(self, selector, spec):
+		"""
+		parse the HTMl based on the spec
+		"""
+		etree = fromstring(self.response.text)
+		datalist = []
+		sel = CSSSelector(selector)
+		els = sel(etree)
+		for el in els:
+			data = {}
+			for key, attr in spec.items():
+				if attr:
+					try:
+						value = el.attrib[attr]
+					except KeyError:
+						value = ''
+				else:
+					value = el.text
+				data[key] = value
+			datalist.append(data)
+		return datalist
+
+class HTMLParser3(HTMLParser2):
+	"""
+	now using Beautiful Soup as the parser
+	"""
+
+	def get_data(self, selector, spec):
+		"""
+		parse the HTMl based on the spec
+		"""
+		doc = BeautifulSoup(self.response.text, 'html.parser')
+		datalist = []
+		els = doc.select(selector)
+		for el in els:
+			data = {}
+			for key, attr in spec.items():
+				if attr:
+					value = el.attrs.get(attr, '')
+				else:
+					value = el.text.strip()
+				data[key] = value
+			datalist.append(data)
+		return datalist
