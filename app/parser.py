@@ -23,12 +23,21 @@ class HTMLParser(object):
 			self.response = response
 			return response.content
 		else:
+			# TODO - better exception handling, better logging
 			return None
 
 	def get_data(self, selector, spec):
 		"""
-		parse the HTML based on the spec
+		parse the HTML based on the spec.
+		selector is a CSS style selector.
+		returns a list of objects - one for each element that the selector matches
+		spec is a dict that will be returned with the same keys but with actual values.
+		if the value is None, the text of the elemtn will be returned
+		if the value is a string, the string will be used to access an attribute value.
 		"""
+		if not self.response:
+			# TODO raise exception? log error?
+			return []
 		doc = BeautifulSoup(self.response.text, 'html.parser')
 		datalist = []
 		els = doc.select(selector)
@@ -50,6 +59,7 @@ class HTMLParser(object):
 		some http headers don't offer the content-size if the response is chunked
 		in that case we'll return the length of the content as a best guess
 		"""
+		size = 0
 		try:
 			size = self.response.headers['content-length']
 		except KeyError:
