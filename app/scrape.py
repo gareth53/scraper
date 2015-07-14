@@ -1,4 +1,4 @@
-from .parser import HTMLParser3
+from .parser import HTMLParser
 from .utils import decimalize
 import re, json
 
@@ -26,13 +26,13 @@ DETAIL2 = {
 }
 
 
-items = HTMLParser3(ROOT_URL)
+items = HTMLParser(ROOT_URL)
 item_list = items.get_data(ALL_FRUITS['selector'], ALL_FRUITS['spec'])
 
 total_cost = 0
 
 for item in item_list:
-	item_detail = HTMLParser3(item['url'])
+	item_detail = HTMLParser(item['url'])
 	price = item_detail.get_data(DETAIL1['selector'], DETAIL1['spec'])[0]
 	# convert to a pure number
 	price['unit_price'] = re.sub('[^0-9|.]', '', price['unit_price'])

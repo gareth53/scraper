@@ -1,81 +1,8 @@
-from lxml.etree import fromstring
-from lxml.cssselect import CSSSelector
 from bs4 import BeautifulSoup
 import json
 import requests
 
 class HTMLParser(object):
-
-	def __init__(self, url, selector, spec):
-		"""
-		url: string, URL to be retrieved
-		selector: string, XPath(?)
-		spec: dict, dict with values as new selectors
-		"""
-		self.url = url
-		self.selector = selector
-		self.spec = spec
-
-
-	def _request(self):
-		"""
-		initialises the request
-		stashes the entire response object on self
-		returns the content
-		"""
-		response = requests.get(self.url)
-		if response.ok:
-			self.response = response
-			return response.content
-		else:
-			return None
-
-	def parse_html(self):
-		"""
-		parse the HTMl based on the spec
-		"""
-		etree = fromstring(self.response.text)
-		datalist = []
-		els = etree.findall(self.selector)
-		for el in els:
-			data = {}
-			for key, attr in self.spec.items():
-				if attr:
-					try:
-						value = el.attrib[attr]
-					except KeyError:
-						value = ''
-				else:
-					value = el.text
-				data[key] = value
-			datalist.append(data)
-		return datalist
-
-
-	def get_response_size(self):
-		"""
-		returns size of the response in Kb.
-		some http headers wonlt supply the content-size if the response is chunked
-		in that case we'll return the length of the content as a best guess
-		"""
-		try:
-			size = self.response.headers['content-length']
-		except KeyError:
-			size = len(self.response.content)
-		return size
-
-
-	def get_data(self):
-		# make HTTP request
-		self._request()
-		# build data, return JSON
-		return self.parse_html()
-
-
-class HTMLParser2(HTMLParser):
-	"""
-	new parse using CSS selectors, much nicer than XPath :)
-	"""
 
 	def __init__(self, url, autorequest=True):
 		"""
@@ -100,34 +27,7 @@ class HTMLParser2(HTMLParser):
 
 	def get_data(self, selector, spec):
 		"""
-		parse the HTMl based on the spec
-		"""
-		etree = fromstring(self.response.text)
-		datalist = []
-		sel = CSSSelector(selector)
-		els = sel(etree)
-		for el in els:
-			data = {}
-			for key, attr in spec.items():
-				if attr:
-					try:
-						value = el.attrib[attr]
-					except KeyError:
-						value = ''
-				else:
-					value = el.text
-				data[key] = value
-			datalist.append(data)
-		return datalist
-
-class HTMLParser3(HTMLParser2):
-	"""
-	now using Beautiful Soup as the parser
-	"""
-
-	def get_data(self, selector, spec):
-		"""
-		parse the HTMl based on the spec
+		parse the HTML based on the spec
 		"""
 		doc = BeautifulSoup(self.response.text, 'html.parser')
 		datalist = []
@@ -142,3 +42,16 @@ class HTMLParser3(HTMLParser2):
 				data[key] = value
 			datalist.append(data)
 		return datalist
+
+
+	def get_response_size(self):
+		"""
+		returns size of the response in Kb.
+		some http headers don't offer the content-size if the response is chunked
+		in that case we'll return the length of the content as a best guess
+		"""
+		try:
+			size = self.response.headers['content-length']
+		except KeyError:
+			size = len(self.response.content)
+		return size
