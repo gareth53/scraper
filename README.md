@@ -2,19 +2,21 @@ About
 -----
 
 Simple website scraper built for the experince of building one....
-Should scrape data from the Ripe Fruits page on sainsiburys.co.uk and then data from each product page that links from there...
+Should scrape data from the Ripe Fruits page on sainsiburys.co.uk and then data from each product page that link from there...
 
 
 Installation Notes
 ------------------
 
-This app uses lmxml which is dependent upon a C lib called libxml2
+1. Setup a Virtial Environment
 
-To install lxml and its dependencies run:
+>virtualenv --no-site-packages scraper
 
->STATIC_DEPS=true pip install lxml
+2. Activate teh virutalenv
 
-For other requirements, pip install:
+touch scraper/bin/activate
+
+3. Install the requirements
 
 >pip install -r requirements.txt
 
